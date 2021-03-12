@@ -177,7 +177,7 @@ const APP_STATS = new Vue({
     methods: {
         async getStatistics() {
             axios.get('/api/statistics')
-                .then(resp => this.stats = resp.data)
+                .then(resp => this.stats = resp.data["propertyStatistics"])
                 .catch(error => {
                     console.error("STATISTICS FAILED TO LOAD\n" + error);
                 })
