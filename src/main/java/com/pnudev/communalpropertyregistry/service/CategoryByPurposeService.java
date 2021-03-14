@@ -5,6 +5,7 @@ import com.pnudev.communalpropertyregistry.dto.CategoryByPurposeResponseDto;
 
 import java.util.List;
 
+
 public interface CategoryByPurposeService {
 
     CategoryByPurposeResponseDto findAll();
