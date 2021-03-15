@@ -5,7 +5,7 @@ import com.pnudev.communalpropertyregistry.dto.CategoryByPurposeResponseDto;
 import com.pnudev.communalpropertyregistry.dto.form.CategoryByPurposeFormDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import com.pnudev.communalpropertyregistry.dto.CategoryByPurposeResponseDto;
 
 public interface CategoryByPurposeService {
 
