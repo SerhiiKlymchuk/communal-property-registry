@@ -1,5 +1,10 @@
 //init map
-let map = L.map('map').setView([49.25589, 24.90972], 7)
+const KOLOMYIA_MAP_LOCATION = {
+    lat: 48.53,
+    lon: 25.05,
+};
+
+let map = L.map('map').setView([KOLOMYIA_MAP_LOCATION.lat, KOLOMYIA_MAP_LOCATION.lon], 13)
 
 L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=FLZjrggiEUkOsMhDShR0', {
     attribution: `<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>
@@ -17,32 +22,23 @@ const STATUS_COLORS = {
 
 //marker icon
 class Icon {
-    constructor(color) {
-        this.color = color;
-        return this.getInstance();
-    }
 
-    getInstance() {
-        return L.icon({
-            iconUrl: `data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'
-                aria-labelledby='title' aria-describedby='desc' role='img'
-                xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3EPin%3C/title%3E%3Cdesc%3EA
-                solid styled icon from Orion Icon Library.%3C/desc%3E%3Cpath data-name='layer1'
-                d='M32 2a20 20 0 0 0-20 20c0 18 20 40 20 40s20-22 20-40A20 20 0 0 0 32
-                2zm0 28a8 8 0 1 1 8-8 8 8 0 0 1-8 8z' fill='${this.color}' %3E%3C/path%3E%3C/svg%3E`,
-            iconSize: [40, 45],
+    constructor(color) {
+        return L.divIcon({
+            html: `<i class="fas fa-map-marker-alt" style="color:${color}"></i>`,
             iconAnchor: [20, 43],
-            popupAnchor: [0, -36]
+            className: "marker__icon"
         });
     }
+
 }
 
 let markerLayers = [];
 getMarkers();
 
 //update markers, remove old, add new
-function updateMarkers(){
-    while(markerLayers.length > 0) {
+function updateMarkers() {
+    while (markerLayers.length > 0) {
         map.removeLayer(markerLayers.pop());
     }
 
@@ -50,10 +46,10 @@ function updateMarkers(){
 }
 
 //get all markers
-async function getMarkers(){
+async function getMarkers() {
     axios.get(`/api/properties/map-locations` + location.search)
         .then(resp => {
-            resp.data.forEach(propertyLocationData => {
+            resp.data["mapLocations"].forEach(propertyLocationData => {
                 addMarker({
                     id: propertyLocationData.propertyId,
 
@@ -67,7 +63,7 @@ async function getMarkers(){
             })
         })
         .catch(error => {
-           console.error( "MARKER LOCATIONS FAILED TO LOAD\n" + error);
+            console.error("MARKER LOCATIONS FAILED TO LOAD\n" + error);
         })
 }
 
@@ -75,31 +71,33 @@ async function getMarkers(){
 function addMarker(marker) {
     let icon = new Icon(STATUS_COLORS[marker.status]);
 
-    let newMarker = Object.defineProperty(L.marker(marker.coords, { icon: icon }),
-        'id', {value:marker.id})
+    let newMarker = Object.defineProperty(L.marker(marker.coords, {icon: icon}),
+        'id', {value: marker.id})
         .addTo(map)
 
-    newMarker.on('click', handleMarkerClick)
+    newMarker.addEventListener("click", handleMarkerClick, {once: true});
     markerLayers.push(newMarker);
 }
 
 //display property when clicking marker
 function handleMarkerClick(e) {
-    APP_PROPERTIES.getPropertyOnMarkerClick(e.target.id)
-    map.setView(e.target.getLatLng(), 7)
+    if (e.originalEvent.isTrusted) {
+        APP_PROPERTIES.getPropertyOnMarkerClick(e.target.id)
+    }
 }
 
 //Highlight marker on property hover
 let oldPosition;
+
 function handlePropertyHoverIn(propertyId) {
     let markerStyles;
 
     try {
         markerStyles = markerLayers
-            .find(marker => marker.id === propertyId + '')
+            .find(marker => marker.id === propertyId)
             ._icon.style;
 
-    } catch(error){
+    } catch (error) {
         console.error("APPROPRIATE MARKER WAS NOT FOUND\n" + error);
         return;
     }
@@ -112,7 +110,8 @@ function handlePropertyHoverIn(propertyId) {
         .split(",")
         .map(point => parseInt(point));
 
-    newPosition[0] -= 3; newPosition[1] -= 6;
+    newPosition[0] -= 3;
+    newPosition[1] -= 6;
     newPosition = newPosition.map(point => point + "px").join(", ")
 
     markerStyles.transition = ".2s linear";
@@ -123,12 +122,12 @@ function handlePropertyHoverIn(propertyId) {
 function handlePropertyHoverOut(propertyId) {
     let markerStyles;
 
-    try{
+    try {
         markerStyles = markerLayers
-            .find(marker => marker.id === propertyId + '')
+            .find(marker => marker.id === propertyId)
             ._icon.style;
 
-    } catch(error){
+    } catch (error) {
         console.error("APPROPRIATE MARKER WAS NOT FOUND\n" + error);
         return;
     }

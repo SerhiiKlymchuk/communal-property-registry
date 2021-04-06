@@ -8,9 +8,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Property {
@@ -67,8 +68,17 @@ public class Property {
 
     public enum PropertyStatus {
 
-        NON_RENT, RENT, FIRST_OR_SECOND_TYPE_LIST, PRIVATIZED, USED_BY_CITY_COUNCIL
+        NON_RENT, RENT, FIRST_OR_SECOND_TYPE_LIST, PRIVATIZED, USED_BY_CITY_COUNCIL;
 
+        public static Optional<PropertyStatus> fromName(String name) {
+            try {
+
+                Property.PropertyStatus status = Property.PropertyStatus.valueOf(name.toUpperCase());
+                return Optional.of(status);
+
+            } catch (IllegalArgumentException e) {
+                return Optional.empty();
+            }
+        }
     }
-
 }
